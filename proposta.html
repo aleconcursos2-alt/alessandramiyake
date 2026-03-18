@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Proposta — Dra. Alessandra Miyake</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --vinho:#6B2737;--terra:#A0522D;--gold:#C8955A;
+  --cream:#F7F0E8;--offwhite:#FAF7F4;--charcoal:#2C2420;
+  --mid:#7A6358;--light:#B8A99A;--white:#fff;--green:#2D6A4F;
+  --blush:#E8C5B5;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Jost',sans-serif;background:var(--offwhite);color:var(--charcoal);}
+
+/* ── TELAS ── */
+#tela-form { display:block; }
+#tela-proposta { display:none; }
+
+/* ── FORMULÁRIO ── */
+.form-wrap{
+  max-width:560px; margin:0 auto; padding:48px 24px 64px;
+}
+.form-header{ text-align:center; margin-bottom:40px; }
+.form-tag{ font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; }
+.form-title{ font-family:'Cormorant Garamond',serif; font-size:32px; color:var(--vinho); margin-bottom:6px; }
+.form-sub{ font-size:12px; color:var(--light); }
+
+.form-section{ margin-bottom:28px; }
+.form-section-title{
+  font-size:10px; letter-spacing:3px; text-transform:uppercase;
+  color:var(--terra); margin-bottom:14px; padding-bottom:8px;
+  border-bottom:1px solid rgba(160,82,45,0.15);
+}
+.form-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.form-row.single{ grid-template-columns:1fr; }
+.form-group{ display:flex; flex-direction:column; gap:5px; }
+.form-label{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--mid); }
+.form-input{
+  padding:10px 14px; border:1px solid rgba(160,82,45,0.2);
+  border-radius:4px; font-family:'Jost',sans-serif; font-size:13px;
+  color:var(--charcoal); background:var(--white);
+  transition:.15s; outline:none;
+}
+.form-input:focus{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(200,149,90,0.1); }
+.form-input::placeholder{ color:var(--light); }
+select.form-input{ cursor:pointer; }
+
+.btn-gerar{
+  width:100%; padding:16px; margin-top:8px;
+  background:linear-gradient(120deg,var(--vinho),var(--terra));
+  color:#fff; border:none; border-radius:4px;
+  font-family:'Jost',sans-serif; font-size:11px; letter-spacing:3px;
+  text-transform:uppercase; cursor:pointer; transition:.2s;
+}
+.btn-gerar:hover{ opacity:.9; }
+
+/* ── PROPOSTA ── */
+.prop-actions{
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  background:var(--charcoal); padding:10px 24px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.prop-actions-left{ display:flex; gap:10px; }
+.btn-action{
+  padding:8px 18px; border-radius:4px; font-size:10px; letter-spacing:2px;
+  text-transform:uppercase; cursor:pointer; font-family:'Jost',sans-serif;
+  border:none; transition:.2s;
+}
+.btn-voltar{ background:rgba(255,255,255,0.1); color:#fff; }
+.btn-voltar:hover{ background:rgba(255,255,255,0.2); }
+.btn-imprimir{ background:var(--gold); color:var(--charcoal); font-weight:500; }
+.btn-imprimir:hover{ opacity:.9; }
+.btn-copiar{ background:rgba(255,255,255,0.1); color:#fff; }
+.prop-url-info{ font-size:10px; color:rgba(255,255,255,0.4); }
+
+/* CAPA */
+.cover{
+  min-height:100vh;
+  background:linear-gradient(150deg,var(--vinho) 0%,#4A1520 40%,var(--terra) 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 32px;text-align:center;position:relative;overflow:hidden;
+  margin-top:44px;
+}
+.cover::before{
+  content:'AM';font-family:'Cormorant Garamond',serif;font-size:500px;
+  color:rgba(255,255,255,0.03);position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-52%);pointer-events:none;white-space:nowrap;
+}
+.cover-orn-top{ width:2px;height:60px;background:linear-gradient(to bottom,transparent,var(--gold));margin-bottom:32px; }
+.cover-tag{ font-size:10px;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:24px; }
+.cover-name{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;color:var(--white);line-height:1.1;margin-bottom:8px;}
+.cover-role{font-size:10px;letter-spacing:5px;text-transform:uppercase;color:var(--blush);margin-bottom:6px;}
+.cover-oab{font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:40px;}
+.orn-line-wrap{display:flex;align-items:center;width:260px;margin:0 auto 32px;}
+.orn-l{flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(200,149,90,0.6));}
+.orn-r{flex:1;height:1px;background:linear-gradient(to left,transparent,rgba(200,149,90,0.6));}
+.orn-d{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+.cover-proposta{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:300;color:rgba(255,255,255,0.55);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;}
+.cover-cliente{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:var(--white);margin-bottom:4px;}
+.cover-tipo{font-size:12px;color:var(--blush);letter-spacing:2px;}
+.cover-orn-bot{width:2px;height:60px;background:linear-gradient(to top,transparent,var(--gold));margin-top:40px;}
+
+/* SEÇÕES */
+.section{padding:64px 32px;max-width:680px;margin:0 auto;}
+.section-tag{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--terra);margin-bottom:8px;}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;color:var(--charcoal);margin-bottom:24px;line-height:1.2;}
+.section-title em{font-style:italic;color:var(--vinho);}
+.divider{height:1px;background:linear-gradient(to right,transparent,var(--gold) 20%,var(--terra) 50%,var(--gold) 80%,transparent);margin:48px 0;}
+
+/* BIO */
+.bio-text p{font-size:14px;line-height:1.8;color:var(--mid);margin-bottom:16px;}
+.bio-text p strong{color:var(--charcoal);}
+.bio-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+.badge{padding:5px 12px;border-radius:20px;font-size:10px;letter-spacing:1px;background:var(--cream);color:var(--terra);border:1px solid rgba(160,82,45,0.2);}
+
+/* DIFERENCIAIS */
+.dif-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.dif-card{background:var(--white);border-radius:6px;padding:22px;border:1px solid rgba(160,82,45,0.1);border-top:2px solid var(--gold);}
+.dif-icon{font-size:24px;margin-bottom:12px;}
+.dif-title{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--charcoal);margin-bottom:8px;font-weight:500;}
+.dif-text{font-size:12px;color:var(--mid);line-height:1.6;}
+
+/* ETAPAS */
+.etapa{display:flex;gap:20px;position:relative;}
+.etapa-left{display:flex;flex-direction:column;align-items:center;width:40px;flex-shrink:0;}
+.etapa-num{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--vinho),var(--terra));display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:16px;color:#fff;flex-shrink:0;z-index:1;}
+.etapa-line{width:1px;flex:1;background:linear-gradient(to bottom,var(--gold),transparent);margin:4px 0;min-height:20px;}
+.etapa-content{padding:4px 0 28px;}
+.etapa-title{font-size:14px;font-weight:500;color:var(--charcoal);margin-bottom:4px;}
+.etapa-desc{font-size:12px;color:var(--mid);line-height:1.6;}
+.etapa-prazo{display:inline-block;margin-top:6px;font-size:10px;letter-spacing:1px;color:var(--terra);background:rgba(160,82,45,0.08);padding:3px 10px;border-radius:20px;}
+
+/* INVESTIMENTO */
+.invest-wrap{background:linear-gradient(150deg,var(--vinho),var(--terra));border-radius:8px;padding:36px;color:#fff;}
+.invest-label{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;}
+.invest-valor{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;color:#fff;line-height:1;margin-bottom:4px;}
+.invest-parcelas{font-size:13px;color:var(--blush);margin-bottom:28px;}
+.invest-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+.invest-item{background:rgba(255,255,255,0.08);border-radius:4px;padding:14px 16px;}
+.invest-item-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:4px;}
+.invest-item-val{font-size:13px;color:#fff;font-weight:500;}
+.invest-note{font-size:11px;color:rgba(255,255,255,0.5);line-height:1.6;border-top:1px solid rgba(255,255,255,0.1);padding-top:16px;}
+
+/* ACEITE */
+.aceite-wrap{background:var(--white);border-radius:8px;border:1px solid rgba(160,82,45,0.12);padding:32px;text-align:center;}
+.aceite-title{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--charcoal);margin-bottom:8px;}
+.aceite-sub{font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:28px;}
+.aceite-btns{display:flex;flex-direction:column;gap:12px;max-width:300px;margin:0 auto;}
+.btn-primary{display:block;padding:16px 24px;background:linear-gradient(120deg,var(--vinho),var(--terra));color:#fff;border-radius:4px;font-size:11px;letter-spacing:3px;text-transform:uppercase;text-decoration:none;transition:.2s;}
+.btn-secondary{display:block;padding:14px 24px;border:1px solid rgba(160,82,45,0.25);color:var(--terra);border-radius:4px;font-size:11px;letter-spacing:3px;text-transform:uppercase;text-decoration:none;transition:.2s;}
+.aceite-validade{font-size:10px;color:var(--light);letter-spacing:1px;margin-top:20px;}
+
+/* FOOTER */
+.prop-footer{background:var(--charcoal);padding:32px;text-align:center;}
+.footer-mark{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--blush);margin:0 auto 12px;}
+.footer-name{font-size:13px;color:rgba(255,255,255,0.5);letter-spacing:2px;margin-bottom:8px;}
+.footer-contacts{font-size:11px;color:rgba(255,255,255,0.3);line-height:2;}
+
+/* ══════════════════════════════════
+   PRINT / PDF
+══════════════════════════════════ */
+@media print {
+  /* Esconde absolutamente tudo que não é conteúdo */
+  .prop-actions,
+  #foto-controles,
+  .aceite-btns,
+  .btn-primary,
+  .btn-secondary { display:none !important; }
+
+  body { background:white; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+  /* Capa ocupa página inteira */
+  .cover {
+    margin-top:0 !important;
+    min-height:100vh;
+    page-break-after: always;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+
+  /* Cada bloco de seção começa em nova página */
+  .print-page-break {
+    page-break-before: always;
+  }
+
+  /* Evita quebra no meio de cards, etapas e blocos */
+  .dif-card   { break-inside:avoid; border:1px solid #ddd !important; }
+  .etapa      { break-inside:avoid; }
+  .aceite-wrap{ break-inside:avoid; border:1px solid #ddd; }
+  .invest-wrap{ -webkit-print-color-adjust:exact; print-color-adjust:exact; break-inside:avoid; }
+  .prop-footer{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  h1,h2,h3   { page-break-after:avoid; }
+
+  .section    { padding:40px 32px; }
+  .divider    { display:none; }
+}
+
+@media(max-width:600px){
+  .dif-grid{grid-template-columns:1fr;}
+  .invest-grid{grid-template-columns:1fr;}
+  .form-row{grid-template-columns:1fr;}
+  #p-foto-bio{ width:100% !important; height:200px !important; }
+  .section > div[style*="grid-template-columns:200px"]{grid-template-columns:1fr !important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TELA 1 — FORMULÁRIO ══ -->
+<div id="tela-form">
+<div class="form-wrap">
+
+  <div class="form-header">
+    <div class="form-tag">Dra. Alessandra Miyake · OAB/SP 433.727</div>
+    <div class="form-title">Gerador de Proposta</div>
+    <div class="form-sub">Preencha os dados do cliente e gere a proposta personalizada</div>
+  </div>
+
+  <!-- FOTO -->
+  <div class="form-section">
+    <div class="form-section-title">Sua Foto</div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label class="form-label">Foto profissional</label>
+        <input class="form-input" id="f-foto" type="file" accept="image/*" onchange="previewFoto(this)">
+        <div id="foto-preview" style="margin-top:10px;display:none;">
+          <img id="foto-img" style="width:80px;height:80px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid var(--gold);">
+          <span style="font-size:11px;color:var(--green);margin-left:10px;">✓ Foto carregada</span>
+        </div>
+        <div style="font-size:10px;color:var(--light);margin-top:4px;">A foto aparece na seção de apresentação da proposta</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIENTE -->
+  <div class="form-section">
+    <div class="form-section-title">Dados do Cliente</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Nome completo</label>
+        <input class="form-input" id="f-nome" type="text" placeholder="Ex: Giovanni Moretti">
+      </div>
+      <div class="form-group">
+        <label class="form-label">País de residência</label>
+        <input class="form-input" id="f-pais" type="text" placeholder="Ex: Itália">
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label class="form-label">Tipo de caso</label>
+        <select class="form-input" id="f-tipo">
+          <option value="">Selecione...</option>
+          <option value="Homologação de Sentença · Divórcio">Homologação — Divórcio</option>
+          <option value="Homologação de Sentença · Herança / Inventário">Homologação — Herança / Inventário</option>
+          <option value="Homologação de Sentença · Adoção Internacional">Homologação — Adoção Internacional</option>
+          <option value="Homologação de Sentença · Guarda de Filhos">Homologação — Guarda de Filhos</option>
+          <option value="Direito de Família Internacional">Direito de Família Internacional</option>
+          <option value="Outro">Outro (digitar abaixo)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row single" id="tipo-custom-wrap" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Especifique o tipo de caso</label>
+        <input class="form-input" id="f-tipo-custom" type="text" placeholder="Descreva o caso">
+      </div>
+    </div>
+  </div>
+
+  <!-- HONORÁRIOS — OPÇÃO À VISTA -->
+  <div class="form-section">
+    <div class="form-section-title">💰 Opção 1 — Pagamento à Vista</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Valor à vista (R$)</label>
+        <input class="form-input" id="f-valor-avista" type="text" placeholder="Ex: 10.000,00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Forma de pagamento</label>
+        <select class="form-input" id="f-pagamento-avista">
+          <option value="PIX">PIX</option>
+          <option value="PIX ou Wise">PIX ou Wise</option>
+          <option value="Wise">Wise</option>
+          <option value="Transferência bancária">Transferência bancária</option>
+          <option value="Boleto bancário">Boleto bancário</option>
+          <option value="Cartão de crédito">Cartão de crédito</option>
+          <option value="PIX ou Cartão de crédito">PIX ou Cartão de crédito</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--light);margin-top:-4px;margin-bottom:4px;">Deixe em branco se não quiser oferecer essa opção</div>
+  </div>
+
+  <!-- HONORÁRIOS — OPÇÃO PARCELADA -->
+  <div class="form-section">
+    <div class="form-section-title">💳 Opção 2 — Pagamento Parcelado</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Valor total parcelado (R$)</label>
+        <input class="form-input" id="f-valor" type="text" placeholder="Ex: 12.000,00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Número de parcelas</label>
+        <select class="form-input" id="f-parcelas">
+          <option value="2">2x</option>
+          <option value="3">3x</option>
+          <option value="4">4x</option>
+          <option value="5">5x</option>
+          <option value="6">6x</option>
+          <option value="8">8x</option>
+          <option value="10">10x</option>
+          <option value="12">12x</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Valor de cada parcela (R$)</label>
+        <input class="form-input" id="f-valor-parcela" type="text" placeholder="Ex: 2.000,00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Forma de pagamento</label>
+        <select class="form-input" id="f-pagamento">
+          <option value="PIX mensal">PIX mensal</option>
+          <option value="Cartão de crédito">Cartão de crédito</option>
+          <option value="Boleto bancário">Boleto bancário</option>
+          <option value="Wise">Wise</option>
+          <option value="Transferência bancária">Transferência bancária</option>
+          <option value="PIX ou Cartão de crédito">PIX ou Cartão de crédito</option>
+          <option value="PIX ou Boleto">PIX ou Boleto</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--light);margin-top:-4px;margin-bottom:4px;">Deixe em branco se não quiser oferecer essa opção</div>
+  </div>
+
+  <!-- CONDIÇÕES -->
+  <div class="form-section">
+    <div class="form-section-title">Condições de Pagamento</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Primeira parcela</label>
+        <select class="form-input" id="f-primeira">
+          <option value="Confirma o início dos trabalhos">Confirma o início dos trabalhos</option>
+          <option value="Na assinatura do contrato">Na assinatura do contrato</option>
+          <option value="Antes do protocolo no STJ">Antes do protocolo no STJ</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Demais parcelas</label>
+        <select class="form-input" id="f-demais">
+          <option value="Mensais na mesma data">Mensais na mesma data</option>
+          <option value="A cada etapa concluída">A cada etapa concluída</option>
+          <option value="Conforme cronograma">Conforme cronograma</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label class="form-label">Data da proposta</label>
+        <input class="form-input" id="f-data" type="date">
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label class="form-label">Validade da proposta</label>
+        <select class="form-input" id="f-validade">
+          <option value="7 dias">7 dias</option>
+          <option value="15 dias" selected>15 dias</option>
+          <option value="30 dias">30 dias</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-gerar" onclick="gerarProposta()">✦ Gerar Proposta Personalizada</button>
+
+</div>
+</div>
+
+<!-- ══ TELA 2 — PROPOSTA ══ -->
+<div id="tela-proposta">
+
+  <!-- Barra de ações -->
+  <div class="prop-actions">
+    <div class="prop-actions-left">
+      <button class="btn-action btn-voltar" onclick="voltarForm()">← Editar</button>
+      <button class="btn-action btn-imprimir" onclick="imprimirPDF()">🖨 Salvar PDF</button>
+      <button class="btn-action btn-copiar" onclick="copiarLink()" id="btn-copiar">🔗 Copiar link</button>
+    </div>
+    <div class="prop-url-info">Salve como PDF ou compartilhe o link direto</div>
+  </div>
+
+  <!-- ── PÁGINA 1: CAPA ── -->
+  <div class="cover">
+    <div class="cover-orn-top"></div>
+    <div class="cover-tag">Proposta de Honorários Advocatícios</div>
+    <div class="cover-name">Dra. Alessandra Miyake</div>
+    <div class="cover-role">Advogada · Direito de Família Internacional</div>
+    <div class="cover-oab">OAB/SP 433.727</div>
+    <div class="orn-line-wrap"><div class="orn-l"></div><div class="orn-d"></div><div class="orn-r"></div></div>
+    <div class="cover-proposta">Elaborada para</div>
+    <div class="cover-cliente" id="p-nome-capa">—</div>
+    <div class="cover-tipo" id="p-tipo-capa">—</div>
+    <div class="cover-orn-bot"></div>
+  </div>
+
+  <!-- ── PÁGINA 2: APRESENTAÇÃO ── -->
+  <div style="background:var(--offwhite)" class="print-page-break">
+  <div class="section">
+    <div class="section-tag">01 — Quem sou</div>
+    <div class="section-title">Conheço o caminho. <em>Vou percorrê-lo com você.</em></div>
+    <div style="display:grid;grid-template-columns:200px 1fr;gap:32px;align-items:start;">
+
+      <div style="flex-shrink:0;">
+        <div id="p-foto-bio" style="width:200px;height:200px;border-radius:6px;overflow:hidden;background:linear-gradient(135deg,var(--cream),var(--blush));display:flex;align-items:center;justify-content:center;border:1px solid rgba(200,149,90,0.2);position:relative;cursor:grab;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:56px;color:var(--light);" id="p-foto-bio-placeholder">AM</div>
+          <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--gold),var(--vinho),var(--gold));"></div>
+        </div>
+        <!-- Controles de ajuste — NUNCA aparecem no PDF -->
+        <div id="foto-controles" style="display:none;margin-top:10px;background:var(--cream);border-radius:6px;padding:10px;border:1px solid rgba(200,149,90,0.2);">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--terra);margin-bottom:8px;">Ajustar foto</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:10px;color:var(--mid);width:40px;">Zoom</span>
+              <input type="range" id="ctrl-zoom" min="100" max="300" value="100" style="flex:1;" oninput="ajustarFoto()">
+              <span style="font-size:10px;color:var(--mid);width:32px;" id="ctrl-zoom-val">100%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:10px;color:var(--mid);width:40px;">Cima ↕</span>
+              <input type="range" id="ctrl-y" min="-100" max="100" value="0" style="flex:1;" oninput="ajustarFoto()">
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:10px;color:var(--mid);width:40px;">Lado ↔</span>
+              <input type="range" id="ctrl-x" min="-100" max="100" value="0" style="flex:1;" oninput="ajustarFoto()">
+            </div>
+            <button onclick="resetarFoto()" style="font-size:9px;letter-spacing:1px;padding:4px 8px;background:none;border:1px solid rgba(160,82,45,0.2);border-radius:3px;color:var(--mid);cursor:pointer;font-family:'Jost',sans-serif;margin-top:2px;">↺ Resetar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bio-text">
+        <p>Sou a <strong>Alessandra Miyake</strong>, advogada inscrita na OAB/SP sob o nº 433.727, com pós-graduação em Direito de Família e Sucessões e especialização em Direito de Família Internacional e Homologação de Sentença Estrangeira.</p>
+        <p>Trabalho exclusivamente de forma remota, o que me permite atender brasileiros em qualquer país do mundo — sem que você precise retornar ao Brasil em nenhum momento do processo.</p>
+        <p>Meu trabalho combina rigor técnico com uma comunicação clara e próxima. Porque entendo que cada processo jurídico envolve, antes de tudo, uma história pessoal.</p>
+        <div class="bio-badges">
+          <span class="badge">Homologação STJ</span>
+          <span class="badge">Direito de Família Internacional</span>
+          <span class="badge">Atendimento online</span>
+          <span class="badge">OAB/SP 433.727</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ── PÁGINA 3: DIFERENCIAIS ── -->
+  <div style="background:var(--white)" class="print-page-break">
+  <div class="section">
+    <div class="section-tag">02 — Por que me escolher</div>
+    <div class="section-title">O que você ganha ao trabalhar <em>comigo</em></div>
+    <div class="dif-grid">
+      <div class="dif-card"><div class="dif-icon">🌐</div><div class="dif-title">100% remoto</div><div class="dif-text">Você não precisa vir ao Brasil em nenhum momento. Reuniões por vídeo, documentos por e-mail, procuração com apostila.</div></div>
+      <div class="dif-card"><div class="dif-icon">⚖️</div><div class="dif-title">Especialização focada</div><div class="dif-text">Atuo exclusivamente em direito de família internacional e homologação de sentença estrangeira.</div></div>
+      <div class="dif-card"><div class="dif-icon">📲</div><div class="dif-title">Portal exclusivo</div><div class="dif-text">Você acompanha o andamento do seu processo em tempo real pelo portal do cliente.</div></div>
+      <div class="dif-card"><div class="dif-icon">🤝</div><div class="dif-title">Comunicação transparente</div><div class="dif-text">Atualizo você a cada movimentação relevante. Sem silêncio, sem jargão jurídico.</div></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ── PÁGINA 4: ETAPAS ── -->
+  <div style="background:var(--offwhite)" class="print-page-break">
+  <div class="section">
+    <div class="section-tag">03 — Como funciona</div>
+    <div class="section-title">O processo do <em>início ao fim</em></div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div class="etapa"><div class="etapa-left"><div class="etapa-num">1</div><div class="etapa-line"></div></div><div class="etapa-content"><div class="etapa-title">Análise inicial e onboarding</div><div class="etapa-desc">Reunião por vídeo para entender o seu caso. Envio do checklist de documentos e orientações iniciais.</div><span class="etapa-prazo">Semana 1</span></div></div>
+      <div class="etapa"><div class="etapa-left"><div class="etapa-num">2</div><div class="etapa-line"></div></div><div class="etapa-content"><div class="etapa-title">Organização da documentação</div><div class="etapa-desc">Orientação para tradução juramentada e apostilamento. Análise e validação de cada documento.</div><span class="etapa-prazo">Semanas 2 a 4</span></div></div>
+      <div class="etapa"><div class="etapa-left"><div class="etapa-num">3</div><div class="etapa-line"></div></div><div class="etapa-content"><div class="etapa-title">Elaboração da petição inicial</div><div class="etapa-desc">Redação e revisão da petição ao STJ. Você recebe para leitura antes do protocolo.</div><span class="etapa-prazo">Após documentação completa</span></div></div>
+      <div class="etapa"><div class="etapa-left"><div class="etapa-num">4</div><div class="etapa-line"></div></div><div class="etapa-content"><div class="etapa-title">Protocolo no STJ</div><div class="etapa-desc">Protocolo eletrônico da petição. Envio do número de protocolo e acompanhamento das intimações.</div><span class="etapa-prazo">Após aprovação</span></div></div>
+      <div class="etapa"><div class="etapa-left"><div class="etapa-num">5</div><div class="etapa-line"></div></div><div class="etapa-content"><div class="etapa-title">Acompanhamento e decisão</div><div class="etapa-desc">Monitoramento das movimentações no STJ. Prazo médio de 6 a 18 meses para decisão.</div><span class="etapa-prazo">6 a 18 meses</span></div></div>
+      <div class="etapa"><div class="etapa-left"><div class="etapa-num">6</div></div><div class="etapa-content"><div class="etapa-title">Registro em cartório</div><div class="etapa-desc">Após decisão favorável, orientação para registro da sentença homologada no cartório brasileiro.</div><span class="etapa-prazo">Conclusão</span></div></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ── PÁGINA 5: INVESTIMENTO ── -->
+  <div style="background:var(--white)" class="print-page-break">
+  <div class="section">
+    <div class="section-tag">04 — Investimento</div>
+    <div class="section-title">Valores e <em>condições</em></div>
+    <div class="invest-wrap">
+      <div class="invest-label">Honorários advocatícios</div>
+      <div class="invest-grid" style="grid-template-columns:1fr 1fr;margin-bottom:20px;" id="p-opcoes-wrap">
+        <!-- Opção à vista -->
+        <div id="p-bloco-avista" style="background:rgba(255,255,255,0.08);border-radius:6px;padding:20px;border:1px solid rgba(200,149,90,0.3);">
+          <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;">OPÇÃO 1 — À VISTA</div>
+          <div class="invest-valor" id="p-valor-avista" style="font-size:36px;">R$ —</div>
+          <div style="font-size:11px;color:var(--blush);margin-top:4px;" id="p-pagto-avista">—</div>
+        </div>
+        <!-- Opção parcelada -->
+        <div id="p-bloco-parcelado" style="background:rgba(255,255,255,0.12);border-radius:6px;padding:20px;border:1px solid rgba(200,149,90,0.5);">
+          <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;">OPÇÃO 2 — PARCELADO</div>
+          <div class="invest-valor" id="p-valor" style="font-size:36px;">R$ —</div>
+          <div class="invest-parcelas" id="p-parcelas" style="margin-bottom:0;">—</div>
+        </div>
+      </div>
+      <div class="invest-grid">
+        <div class="invest-item"><div class="invest-item-label">Primeira parcela</div><div class="invest-item-val" id="p-primeira">—</div></div>
+        <div class="invest-item"><div class="invest-item-label">Demais parcelas</div><div class="invest-item-val" id="p-demais">—</div></div>
+        <div class="invest-item"><div class="invest-item-label">Validade da proposta</div><div class="invest-item-val" id="p-validade">—</div></div>
+        <div class="invest-item"><div class="invest-item-label">Aceite</div><div class="invest-item-val">Por WhatsApp ou e-mail</div></div>
+      </div>
+      <div class="invest-note">Os honorários não incluem custas processuais do STJ e emolumentos cartorários — pagos diretamente pelo cliente conforme surgem no processo.</div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ── PÁGINA 6: ACEITE + FOOTER ── -->
+  <div style="background:var(--offwhite)" class="print-page-break">
+  <div class="section">
+    <div class="section-tag">05 — Próximos passos</div>
+    <div class="section-title">Pronta para <em>começar</em></div>
+    <div class="aceite-wrap">
+      <div class="aceite-title">Vamos em frente?</div>
+      <div class="aceite-sub">Para aceitar esta proposta, basta me responder por WhatsApp confirmando. Não é necessária assinatura — a confirmação por mensagem é suficiente.<br><br>Após o aceite, envio o contrato e agendamos a reunião de onboarding.</div>
+      <div class="aceite-btns">
+        <a href="https://wa.me/5511957221668?text=Ol%C3%A1%20Dra.%20Alessandra%2C%20aceito%20a%20proposta!" class="btn-primary" target="_blank">💬 Aceitar pelo WhatsApp</a>
+      </div>
+      <div class="aceite-validade" id="p-validade-aceite">Esta proposta é válida por 15 dias a partir do envio.</div>
+      <div style="margin-top:12px;font-size:11px;color:var(--light);" id="p-data-proposta"></div>
+    </div>
+  </div>
+
+  <!-- FOOTER inline nesta última página -->
+  <div class="prop-footer">
+    <div class="footer-mark">AM</div>
+    <div class="footer-name">Dra. Alessandra Miyake · OAB/SP 433.727</div>
+    <div class="footer-contacts">(11) 95722-1668<br>alessandrarmiyake&#64;adv.oabsp.org.br<br>@dralessandramiyake</div>
+  </div>
+  </div>
+
+</div><!-- fim tela-proposta -->
+
+<script>
+/* ══════════════════════════════════════════════
+   FOTO
+══════════════════════════════════════════════ */
+let fotoSrc = null;
+
+function previewFoto(input){
+  if(input.files && input.files[0]){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      fotoSrc = e.target.result;
+      document.getElementById('foto-img').src = fotoSrc;
+      document.getElementById('foto-preview').style.display = 'flex';
+      document.getElementById('foto-preview').style.alignItems = 'center';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function aplicarFoto(){
+  if(!fotoSrc) return;
+  const bioWrap = document.getElementById('p-foto-bio');
+  bioWrap.innerHTML =
+    `<img id="foto-bio-img" src="${fotoSrc}" style="width:100%;height:100%;object-fit:cover;transform-origin:center;transition:.1s;">` +
+    `<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--gold),var(--vinho),var(--gold));pointer-events:none;"></div>`;
+  document.getElementById('foto-controles').style.display = 'block';
+  document.getElementById('ctrl-zoom').value = 100;
+  document.getElementById('ctrl-y').value    = 0;
+  document.getElementById('ctrl-x').value    = 0;
+  document.getElementById('ctrl-zoom-val').textContent = '100%';
+}
+
+function ajustarFoto(){
+  const img = document.getElementById('foto-bio-img');
+  if(!img) return;
+  const zoom = document.getElementById('ctrl-zoom').value;
+  const x    = document.getElementById('ctrl-x').value;
+  const y    = document.getElementById('ctrl-y').value;
+  document.getElementById('ctrl-zoom-val').textContent = zoom + '%';
+  img.style.transform = `scale(${zoom/100}) translate(${x/2}px, ${y/2}px)`;
+}
+
+function resetarFoto(){
+  document.getElementById('ctrl-zoom').value = 100;
+  document.getElementById('ctrl-x').value    = 0;
+  document.getElementById('ctrl-y').value    = 0;
+  document.getElementById('ctrl-zoom-val').textContent = '100%';
+  ajustarFoto();
+}
+
+/* ══════════════════════════════════════════════
+   TIPO CUSTOM
+══════════════════════════════════════════════ */
+document.getElementById('f-tipo').addEventListener('change', function(){
+  document.getElementById('tipo-custom-wrap').style.display =
+    this.value === 'Outro' ? 'block' : 'none';
+});
+
+/* Data padrão = hoje */
+document.getElementById('f-data').value = new Date().toISOString().split('T')[0];
+
+/* ══════════════════════════════════════════════
+   GERAR PROPOSTA + LINK COMPARTILHÁVEL
+══════════════════════════════════════════════ */
+function gerarProposta(dadosExternos){
+  /* Se chamado a partir da URL, usa dadosExternos; senão lê os campos */
+  const d = dadosExternos || {
+    nome        : document.getElementById('f-nome').value.trim() || '[Cliente]',
+    pais        : document.getElementById('f-pais').value.trim(),
+    tipoSel     : document.getElementById('f-tipo').value,
+    tipoCustom  : document.getElementById('f-tipo-custom').value.trim(),
+    valorAvista : document.getElementById('f-valor-avista').value.trim(),
+    pagtoAvista : document.getElementById('f-pagamento-avista').value,
+    valor       : document.getElementById('f-valor').value.trim(),
+    nParc       : document.getElementById('f-parcelas').value,
+    valorParc   : document.getElementById('f-valor-parcela').value.trim(),
+    pagto       : document.getElementById('f-pagamento').value,
+    validade    : document.getElementById('f-validade').value,
+    primeira    : document.getElementById('f-primeira').value,
+    demais      : document.getElementById('f-demais').value,
+    dataRaw     : document.getElementById('f-data').value,
+  };
+
+  const tipo = d.tipoSel === 'Outro' ? d.tipoCustom : d.tipoSel;
+
+  /* Formatar data */
+  let dataFormatada = '';
+  if(d.dataRaw){
+    const [ano, mes, dia] = d.dataRaw.split('-');
+    const meses = ['janeiro','fevereiro','março','abril','maio','junho',
+                   'julho','agosto','setembro','outubro','novembro','dezembro'];
+    dataFormatada = `${parseInt(dia)} de ${meses[parseInt(mes)-1]} de ${ano}`;
+  }
+
+  /* Capa */
+  document.getElementById('p-nome-capa').textContent = d.nome;
+  document.getElementById('p-tipo-capa').textContent =
+    (tipo || '') + (d.pais ? '  ·  ' + d.pais : '');
+
+  /* À vista */
+  const blocoAvista = document.getElementById('p-bloco-avista');
+  if(d.valorAvista){
+    blocoAvista.style.display = 'block';
+    document.getElementById('p-valor-avista').textContent = 'R$ ' + d.valorAvista;
+    document.getElementById('p-pagto-avista').textContent = d.pagtoAvista;
+  } else {
+    blocoAvista.style.display = 'none';
+  }
+
+  /* Parcelado */
+  const blocoParc = document.getElementById('p-bloco-parcelado');
+  if(d.valor){
+    blocoParc.style.display = 'block';
+    document.getElementById('p-valor').textContent = 'R$ ' + d.valor;
+    const parcelasTexto = d.nParc + 'x' +
+      (d.valorParc ? ' de R$ ' + d.valorParc : '') +
+      ' · ' + d.pagto;
+    document.getElementById('p-parcelas').textContent = parcelasTexto;
+  } else {
+    blocoParc.style.display = 'none';
+  }
+
+  /* Condições */
+  document.getElementById('p-primeira').textContent      = d.primeira;
+  document.getElementById('p-demais').textContent        = d.demais;
+  document.getElementById('p-validade').textContent      = d.validade;
+  document.getElementById('p-validade-aceite').textContent =
+    'Esta proposta é válida por ' + d.validade + ' a partir do envio.';
+  document.getElementById('p-data-proposta').textContent =
+    dataFormatada ? 'Proposta emitida em ' + dataFormatada : '';
+
+  /* Foto */
+  aplicarFoto();
+
+  /* Gravar dados na URL para link compartilhável (sem a foto — binário grande) */
+  if(!dadosExternos){
+    const params = new URLSearchParams({
+      nome        : d.nome,
+      pais        : d.pais,
+      tipoSel     : d.tipoSel,
+      tipoCustom  : d.tipoCustom,
+      valorAvista : d.valorAvista,
+      pagtoAvista : d.pagtoAvista,
+      valor       : d.valor,
+      nParc       : d.nParc,
+      valorParc   : d.valorParc,
+      pagto       : d.pagto,
+      validade    : d.validade,
+      primeira    : d.primeira,
+      demais      : d.demais,
+      dataRaw     : d.dataRaw,
+      view        : '1',
+    });
+    history.replaceState(null, '', '?' + params.toString());
+  }
+
+  /* Trocar telas */
+  document.getElementById('tela-form').style.display     = 'none';
+  document.getElementById('tela-proposta').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+/* ══════════════════════════════════════════════
+   CARREGAR PROPOSTA DA URL (link compartilhado)
+══════════════════════════════════════════════ */
+(function carregarDaURL(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('view') !== '1') return;
+
+  /* Preenche campos do form (útil se o usuário quiser editar) */
+  const setVal = (id, val) => { const el = document.getElementById(id); if(el && val !== null) el.value = val; };
+  setVal('f-nome',           params.get('nome'));
+  setVal('f-pais',           params.get('pais'));
+  setVal('f-tipo',           params.get('tipoSel'));
+  setVal('f-tipo-custom',    params.get('tipoCustom'));
+  setVal('f-valor-avista',   params.get('valorAvista'));
+  setVal('f-pagamento-avista', params.get('pagtoAvista'));
+  setVal('f-valor',          params.get('valor'));
+  setVal('f-parcelas',       params.get('nParc'));
+  setVal('f-valor-parcela',  params.get('valorParc'));
+  setVal('f-pagamento',      params.get('pagto'));
+  setVal('f-validade',       params.get('validade'));
+  setVal('f-primeira',       params.get('primeira'));
+  setVal('f-demais',         params.get('demais'));
+  setVal('f-data',           params.get('dataRaw'));
+
+  if(params.get('tipoSel') === 'Outro'){
+    document.getElementById('tipo-custom-wrap').style.display = 'block';
+  }
+
+  /* Renderiza direto na proposta */
+  gerarProposta({
+    nome        : params.get('nome')        || '[Cliente]',
+    pais        : params.get('pais')        || '',
+    tipoSel     : params.get('tipoSel')     || '',
+    tipoCustom  : params.get('tipoCustom')  || '',
+    valorAvista : params.get('valorAvista') || '',
+    pagtoAvista : params.get('pagtoAvista') || 'PIX',
+    valor       : params.get('valor')       || '',
+    nParc       : params.get('nParc')       || '2',
+    valorParc   : params.get('valorParc')   || '',
+    pagto       : params.get('pagto')       || 'PIX mensal',
+    validade    : params.get('validade')    || '15 dias',
+    primeira    : params.get('primeira')    || '',
+    demais      : params.get('demais')      || '',
+    dataRaw     : params.get('dataRaw')     || '',
+  });
+})();
+
+/* ══════════════════════════════════════════════
+   IMPRESSÃO / PDF
+══════════════════════════════════════════════ */
+function imprimirPDF(){
+  /* Força ocultação dos controles via classe extra antes de imprimir */
+  const ctrl = document.getElementById('foto-controles');
+  if(ctrl) ctrl.style.display = 'none';
+  setTimeout(() => {
+    window.print();
+    /* Restaura controles apenas se a foto foi carregada */
+    const img = document.getElementById('foto-bio-img');
+    if(ctrl && img) ctrl.style.display = 'block';
+  }, 200);
+}
+
+function voltarForm(){
+  document.getElementById('tela-proposta').style.display = 'none';
+  document.getElementById('tela-form').style.display     = 'block';
+  /* Limpa parâmetros da URL ao voltar para edição */
+  history.replaceState(null, '', window.location.pathname);
+  window.scrollTo(0, 0);
+}
+
+function copiarLink(){
+  const btn = document.getElementById('btn-copiar');
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(() => {
+    btn.textContent = '✓ Copiado!';
+    setTimeout(() => { btn.textContent = '🔗 Copiar link'; }, 2500);
+  }).catch(() => {
+    /* Fallback para ambientes sem clipboard API */
+    prompt('Copie o link abaixo:', url);
+  });
+}
+</script>
+</body>
+</html>
